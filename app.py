@@ -47,12 +47,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=False)
-
-# Procfile (for Heroku)
-web: gunicorn app:app
-
-# requirements.txt
-Flask==2.0.1
-Flask-SQLAlchemy==2.5.1
-gunicorn==20.1.0
-psycopg2-binary==2.9.1  # for PostgreSQL support
