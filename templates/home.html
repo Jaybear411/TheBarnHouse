@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The BarnHouse Poker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: black;
+            color: white;
+        }
+        h1 {
+            color: #3498db;
+        }
+        img {
+            max-width: 300px;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to The BarnHouse Poker</h1>
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="The BarnHouse Logo">
+    <br>
+    <a href="{{ url_for('manage_players') }}"><button>Manage Players</button></a>
+</body>
+</html>
