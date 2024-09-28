@@ -65,8 +65,8 @@
         const gameNumber = {{ game_number }};
         function handlePlayerClick(slotIndex) {
             const playerSlot = document.querySelector(`.player-slot:nth-child(${slotIndex + 1})`);
-            if (playerSlot.textContent.trim().startsWith('Add Player')) {
-                window.location.href = "{{ url_for('add_player_to_game', game_number=game_number, slot=-1) }}";
+            if (playerSlot.textContent.trim() === 'Add Player') {
+                window.location.href = `{{ url_for('add_player_to_game', game_number=game_number) }}/${slotIndex}`;
             } else {
                 updatePlayer(slotIndex);
             }
