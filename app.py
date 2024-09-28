@@ -53,12 +53,22 @@ def create_app():
             return redirect(url_for('manage_players'))
         return render_template('add_player.html')
 
-    @app.route('/setup_game/<int:game_number>')
-    def setup_game(game_number):
-        if f'game_{game_number}_players' not in session:
-            session[f'game_{game_number}_players'] = [None] * 9
-        players = session[f'game_{game_number}_players']
-        return render_template('setup_game.html', game_number=game_number, players=players)
+@app.route('/setup_game/<int:game_number>')
+def setup_game(game_number):
+    if f'game_{game_number}_players' not in session:
+        session[f'game_{game_number}_players'] = [None] * 9
+    players = session[f'game_{game_number}_players']
+    
+    # Add balance information to players
+    for i, player in enumerate(players):
+        if player:
+            db_player = Player.query.get(player['id'])
+            if db_player:
+                player['balance'] = db_player.balance
+                players[i] = player
+    
+    session[f'game_{game_number}_players'] = players
+    return render_template('setup_game.html', game_number=game_number, players=players)
 
     @app.route('/add_player/<int:game_number>/<int:slot>', methods=['GET', 'POST'])
     def add_player_to_game(game_number, slot):
@@ -79,6 +89,26 @@ def create_app():
         if f'game_{game_number}_players' in session:
             del session[f'game_{game_number}_players']
         return redirect(url_for('home'))
+
+    @app.route('/update_player_in_game/<int:game_number>/<int:slot>', methods=['POST'])
+    def update_player_in_game(game_number, slot):
+        players = session.get(f'game_{game_number}_players', [None] * 9)
+        player = players[slot]
+        if player:
+            change = float(request.form['change'])
+            player['balance'] = player.get('balance', 0) + change
+            players[slot] = player
+            session[f'game_{game_number}_players'] = players
+            
+            # Update the player in the database
+            db_player = Player.query.get(player['id'])
+            if db_player:
+                db_player.balance += change
+                db_player.games_played += 1
+                db.session.commit()
+            
+            return jsonify({'success': True, 'new_balance': player['balance']})
+        return jsonify({'success': False})
 
     with app.app_context():
         db.create_all()

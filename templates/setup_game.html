@@ -52,6 +52,7 @@
             <div class="player-slot" onclick="handlePlayerClick({{ i }})">
                 {% if players[i] %}
                     {{ players[i]['name'] }} (Buy-in: ${{ '%.2f'|format(players[i]['buy_in']) }})
+                    <br>Balance: $<span id="player-balance-{{ i }}">{{ '%.2f'|format(players[i]['balance']) }}</span>
                 {% else %}
                     Add Player
                 {% endif %}
@@ -66,7 +67,28 @@
             if (playerSlot.textContent.trim().startsWith('Add Player')) {
                 window.location.href = "{{ url_for('add_player_to_game', game_number=game_number, slot=0) }}".replace("slot=0", `slot=${slotIndex}`);
             } else {
-                window.location.href = "{{ url_for('update_player', player_id=0) }}".replace("player_id=0", `player_id=${players[slotIndex].id}`);
+                updatePlayer(slotIndex);
+            }
+        }
+
+        function updatePlayer(slotIndex) {
+            const change = prompt("Enter the change in balance:");
+            if (change !== null) {
+                fetch("{{ url_for('update_player_in_game', game_number=game_number, slot=0) }}".replace("slot=0", `slot=${slotIndex}`), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `change=${change}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`player-balance-${slotIndex}`).textContent = data.new_balance.toFixed(2);
+                    } else {
+                        alert("Failed to update player balance.");
+                    }
+                });
             }
         }
     </script>
