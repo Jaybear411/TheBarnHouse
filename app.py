@@ -2,6 +2,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask import session
 
 db = SQLAlchemy()
 
@@ -18,6 +19,8 @@ def create_app():
         name = db.Column(db.String(100), nullable=False)
         balance = db.Column(db.Float, default=0)
         games_played = db.Column(db.Integer, default=0)
+
+    app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
 
     @app.route('/')
     def home():
@@ -48,6 +51,29 @@ def create_app():
             db.session.commit()
             return redirect(url_for('manage_players'))
         return render_template('add_player.html')
+
+    @app.route('/setup_game/<int:game_number>')
+    def setup_game(game_number):
+        if f'game_{game_number}_players' not in session:
+            session[f'game_{game_number}_players'] = [''] * 9
+        players = session[f'game_{game_number}_players']
+        return render_template('setup_game.html', game_number=game_number, players=players)
+
+    @app.route('/add_player/<int:game_number>/<int:slot>', methods=['GET', 'POST'])
+    def add_player(game_number, slot):
+        if request.method == 'POST':
+            name = request.form['name']
+            new_player = Player(name=name)
+            db.session.add(new_player)
+            db.session.commit()
+            
+            if f'game_{game_number}_players' not in session:
+                session[f'game_{game_number}_players'] = [''] * 9
+            session[f'game_{game_number}_players'][slot] = name
+            session.modified = True
+            
+            return redirect(url_for('setup_game', game_number=game_number))
+        return render_template('add_player.html', game_number=game_number, slot=slot)
 
     with app.app_context():
         db.create_all()

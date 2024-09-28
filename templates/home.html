@@ -27,9 +27,10 @@
             border: none;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 10px;
         }
         button:hover {
-            background-color: #db3434;
+            background-color: #8f1f1f;
         }
     </style>
 </head>
@@ -38,5 +39,9 @@
     <img src="{{ url_for('static', filename='logo.png') }}" alt="The BarnHouse Logo">
     <br>
     <a href="{{ url_for('manage_players') }}"><button>Manage Players</button></a>
+    <br>
+    <a href="{{ url_for('setup_game', game_number=1) }}"><button>Game 1</button></a>
+    <a href="{{ url_for('setup_game', game_number=2) }}"><button>Game 2</button></a>
+    <a href="{{ url_for('setup_game', game_number=3) }}"><button>Game 3</button></a>
 </body>
 </html>
