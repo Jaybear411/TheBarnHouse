@@ -90,12 +90,26 @@ def create_app():
             except ValueError:
                 return "Invalid buy-in amount", 400
 
-            new_player = Player(name=name, balance=-buy_in)
-            db.session.add(new_player)
+            # Check if player already exists
+            existing_player = Player.query.filter_by(name=name).first()
+            if existing_player:
+                player = existing_player
+                player.balance -= buy_in
+            else:
+                player = Player(name=name, balance=-buy_in)
+                db.session.add(player)
+            
             db.session.commit()
 
             players = session.get(f'game_{game_number}_players', [None] * 9)
-            players[slot] = {'id': new_player.id, 'name': name, 'buy_in': buy_in, 'balance': -buy_in}
+            
+            # Find the first empty slot if slot is not specified
+            if slot == -1:
+                slot = next((i for i, p in enumerate(players) if p is None), -1)
+                if slot == -1:
+                    return "No empty slots available", 400
+
+            players[slot] = {'id': player.id, 'name': name, 'buy_in': buy_in, 'balance': player.balance}
             session[f'game_{game_number}_players'] = players
             return redirect(url_for('setup_game', game_number=game_number))
         return render_template('add_player.html', game_number=game_number, slot=slot)
