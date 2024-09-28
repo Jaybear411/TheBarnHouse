@@ -46,7 +46,8 @@ def create_app():
     def add_player():
         if request.method == 'POST':
             name = request.form['name']
-            new_player = Player(name=name)
+            buy_in = float(request.form['buy_in'])
+            new_player = Player(name=name, balance=-buy_in)
             db.session.add(new_player)
             db.session.commit()
             return redirect(url_for('manage_players'))
@@ -55,7 +56,7 @@ def create_app():
     @app.route('/setup_game/<int:game_number>')
     def setup_game(game_number):
         if f'game_{game_number}_players' not in session:
-            session[f'game_{game_number}_players'] = [''] * 9
+            session[f'game_{game_number}_players'] = [None] * 9
         players = session[f'game_{game_number}_players']
         return render_template('setup_game.html', game_number=game_number, players=players)
 
@@ -63,8 +64,12 @@ def create_app():
     def add_player_to_game(game_number, slot):
         if request.method == 'POST':
             name = request.form['name']
-            players = session.get(f'game_{game_number}_players', [''] * 9)
-            players[slot] = name
+            buy_in = float(request.form['buy_in'])
+            new_player = Player(name=name, balance=-buy_in)
+            db.session.add(new_player)
+            db.session.commit()
+            players = session.get(f'game_{game_number}_players', [None] * 9)
+            players[slot] = {'id': new_player.id, 'name': name, 'buy_in': buy_in}
             session[f'game_{game_number}_players'] = players
             return redirect(url_for('setup_game', game_number=game_number))
         return render_template('add_player.html', game_number=game_number, slot=slot)

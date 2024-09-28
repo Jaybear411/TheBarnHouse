@@ -49,9 +49,9 @@
     <h1>Setup Game {{ game_number }}</h1>
     <div class="player-grid">
         {% for i in range(9) %}
-            <div class="player-slot" onclick="addPlayer({{ i }})">
+            <div class="player-slot" onclick="handlePlayerClick({{ i }})">
                 {% if players[i] %}
-                    {{ players[i] }}
+                    {{ players[i]['name'] }} (Buy-in: ${{ '%.2f'|format(players[i]['buy_in']) }})
                 {% else %}
                     Add Player
                 {% endif %}
@@ -61,11 +61,13 @@
     <a href="{{ url_for('home') }}" class="button">Back to Home</a>
 
     <script>
-        function addPlayer(slotIndex) {
-            if (!document.querySelector(`.player-slot:nth-child(${slotIndex + 1})`).textContent.trim().startsWith('Add Player')) {
-                return;
+        function handlePlayerClick(slotIndex) {
+            const playerSlot = document.querySelector(`.player-slot:nth-child(${slotIndex + 1})`);
+            if (playerSlot.textContent.trim().startsWith('Add Player')) {
+                window.location.href = "{{ url_for('add_player_to_game', game_number=game_number, slot=0) }}".replace("slot=0", `slot=${slotIndex}`);
+            } else {
+                window.location.href = "{{ url_for('update_player', player_id=0) }}".replace("player_id=0", `player_id=${players[slotIndex].id}`);
             }
-            window.location.href = "{{ url_for('add_player_to_game', game_number=game_number, slot=0) }}".replace("slot=0", `slot=${slotIndex}`);
         }
     </script>
 </body>
