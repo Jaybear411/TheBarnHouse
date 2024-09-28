@@ -74,6 +74,12 @@ def create_app():
             return redirect(url_for('setup_game', game_number=game_number))
         return render_template('add_player.html', game_number=game_number, slot=slot)
 
+    @app.route('/clear_game/<int:game_number>')
+    def clear_game(game_number):
+        if f'game_{game_number}_players' in session:
+            del session[f'game_{game_number}_players']
+        return redirect(url_for('home'))
+
     with app.app_context():
         db.create_all()
 

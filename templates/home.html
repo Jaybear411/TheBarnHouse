@@ -40,8 +40,17 @@
     <br>
     <a href="{{ url_for('manage_players') }}"><button>Manage Players</button></a>
     <br>
-    <a href="{{ url_for('setup_game', game_number=1) }}"><button>Game 1</button></a>
-    <a href="{{ url_for('setup_game', game_number=2) }}"><button>Game 2</button></a>
-    <a href="{{ url_for('setup_game', game_number=3) }}"><button>Game 3</button></a>
+    <div>
+        <a href="{{ url_for('setup_game', game_number=1) }}"><button>Game 1</button></a>
+        <a href="{{ url_for('clear_game', game_number=1) }}"><button>Clear Game 1</button></a>
+    </div>
+    <div>
+        <a href="{{ url_for('setup_game', game_number=2) }}"><button>Game 2</button></a>
+        <a href="{{ url_for('clear_game', game_number=2) }}"><button>Clear Game 2</button></a>
+    </div>
+    <div>
+        <a href="{{ url_for('setup_game', game_number=3) }}"><button>Game 3</button></a>
+        <a href="{{ url_for('clear_game', game_number=3) }}"><button>Clear Game 3</button></a>
+    </div>
 </body>
 </html>
