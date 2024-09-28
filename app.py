@@ -70,45 +70,45 @@ def setup_game(game_number):
     session[f'game_{game_number}_players'] = players
     return render_template('setup_game.html', game_number=game_number, players=players)
 
-    @app.route('/add_player/<int:game_number>/<int:slot>', methods=['GET', 'POST'])
-    def add_player_to_game(game_number, slot):
-        if request.method == 'POST':
-            name = request.form['name']
-            buy_in = float(request.form['buy_in'])
-            new_player = Player(name=name, balance=-buy_in)
-            db.session.add(new_player)
-            db.session.commit()
-            players = session.get(f'game_{game_number}_players', [None] * 9)
-            players[slot] = {'id': new_player.id, 'name': name, 'buy_in': buy_in}
-            session[f'game_{game_number}_players'] = players
-            return redirect(url_for('setup_game', game_number=game_number))
-        return render_template('add_player.html', game_number=game_number, slot=slot)
-
-    @app.route('/clear_game/<int:game_number>')
-    def clear_game(game_number):
-        if f'game_{game_number}_players' in session:
-            del session[f'game_{game_number}_players']
-        return redirect(url_for('home'))
-
-    @app.route('/update_player_in_game/<int:game_number>/<int:slot>', methods=['POST'])
-    def update_player_in_game(game_number, slot):
+@app.route('/add_player/<int:game_number>/<int:slot>', methods=['GET', 'POST'])
+def add_player_to_game(game_number, slot):
+    if request.method == 'POST':
+        name = request.form['name']
+        buy_in = float(request.form['buy_in'])
+        new_player = Player(name=name, balance=-buy_in)
+        db.session.add(new_player)
+        db.session.commit()
         players = session.get(f'game_{game_number}_players', [None] * 9)
-        player = players[slot]
-        if player:
-            change = float(request.form['change'])
-            player['balance'] = player.get('balance', 0) + change
-            players[slot] = player
-            session[f'game_{game_number}_players'] = players
-            
-            # Update the player in the database
-            db_player = Player.query.get(player['id'])
-            if db_player:
-                db_player.balance += change
-                db_player.games_played += 1
-                db.session.commit()
-            
-            return jsonify({'success': True, 'new_balance': player['balance']})
-        return jsonify({'success': False})
+        players[slot] = {'id': new_player.id, 'name': name, 'buy_in': buy_in}
+        session[f'game_{game_number}_players'] = players
+        return redirect(url_for('setup_game', game_number=game_number))
+    return render_template('add_player.html', game_number=game_number, slot=slot)
+
+@app.route('/clear_game/<int:game_number>')
+def clear_game(game_number):
+    if f'game_{game_number}_players' in session:
+        del session[f'game_{game_number}_players']
+    return redirect(url_for('home'))
+
+@app.route('/update_player_in_game/<int:game_number>/<int:slot>', methods=['POST'])
+def update_player_in_game(game_number, slot):
+    players = session.get(f'game_{game_number}_players', [None] * 9)
+    player = players[slot]
+    if player:
+        change = float(request.form['change'])
+        player['balance'] = player.get('balance', 0) + change
+        players[slot] = player
+        session[f'game_{game_number}_players'] = players
+        
+        # Update the player in the database
+        db_player = Player.query.get(player['id'])
+        if db_player:
+            db_player.balance += change
+            db_player.games_played += 1
+            db.session.commit()
+        
+        return jsonify({'success': True, 'new_balance': player['balance']})
+    return jsonify({'success': False})
 
     with app.app_context():
         db.create_all()
