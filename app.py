@@ -46,6 +46,13 @@ def create_app():
             return redirect(url_for('manage_players'))
         return render_template('update_player.html', player=player)
 
+    @app.route('/delete_player/<int:player_id>', methods=['POST'])
+    def delete_player(player_id):
+        player = Player.query.get_or_404(player_id)
+        db.session.delete(player)
+        db.session.commit()
+        return redirect(url_for('manage_players'))
+
     @app.route('/add_player', methods=['GET', 'POST'])
     def add_player():
         if request.method == 'POST':
@@ -115,6 +122,15 @@ def create_app():
                 db_player.balance += change
                 db_player.games_played += 1
                 db.session.commit()
+            
+            # Update all instances of this player in other games
+            for game_num in range(1, 4):  # Assuming we have 3 games
+                game_players = session.get(f'game_{game_num}_players', [None] * 9)
+                for i, game_player in enumerate(game_players):
+                    if game_player and game_player['id'] == player['id']:
+                        game_player['balance'] = db_player.balance
+                        game_players[i] = game_player
+                session[f'game_{game_num}_players'] = game_players
             
             return jsonify({'success': True, 'new_balance': player['balance']})
         return jsonify({'success': False, 'error': 'Player not found'}), 404

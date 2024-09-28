@@ -53,6 +53,9 @@
             <a href="{{ url_for('update_player', player_id=player.id) }}">
                 {{ player.name }} - Balance: ${{ '%.2f'|format(player.balance) }} - Games Played: {{ player.games_played }}
             </a>
+            <form method="POST" action="{{ url_for('delete_player', player_id=player.id) }}" style="display: inline;">
+                <button type="submit" class="button" onclick="return confirm('Are you sure you want to delete this player?');">Delete</button>
+            </form>
         </li>
     {% endfor %}
     </ul>
