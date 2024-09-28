@@ -60,18 +60,12 @@ def create_app():
         return render_template('setup_game.html', game_number=game_number, players=players)
 
     @app.route('/add_player/<int:game_number>/<int:slot>', methods=['GET', 'POST'])
-    def add_player(game_number, slot):
+    def add_player_to_game(game_number, slot):
         if request.method == 'POST':
             name = request.form['name']
-            new_player = Player(name=name)
-            db.session.add(new_player)
-            db.session.commit()
-            
-            if f'game_{game_number}_players' not in session:
-                session[f'game_{game_number}_players'] = [''] * 9
-            session[f'game_{game_number}_players'][slot] = name
-            session.modified = True
-            
+            players = session.get(f'game_{game_number}_players', [''] * 9)
+            players[slot] = name
+            session[f'game_{game_number}_players'] = players
             return redirect(url_for('setup_game', game_number=game_number))
         return render_template('add_player.html', game_number=game_number, slot=slot)
 
