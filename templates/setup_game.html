@@ -50,9 +50,9 @@
     <div class="player-grid">
         {% for i in range(9) %}
             <div class="player-slot" onclick="handlePlayerClick({{ i }})">
-                {% if players[i] %}
-                    {{ players[i]['name'] }} (Buy-in: ${{ '%.2f'|format(players[i]['buy_in']) }})
-                    <br>Balance: $<span id="player-balance-{{ i }}">{{ '%.2f'|format(players[i]['balance']) }}</span>
+                {% if players[i] and players[i].get('name') %}
+                    {{ players[i]['name'] }} (Buy-in: ${{ '%.2f'|format(players[i].get('buy_in', 0)) }})
+                    <br>Balance: $<span id="player-balance-{{ i }}">{{ '%.2f'|format(players[i].get('balance', 0)) }}</span>
                 {% else %}
                     Add Player
                 {% endif %}

@@ -72,11 +72,17 @@ def create_app():
         
         # Add balance information to players
         for i, player in enumerate(players):
-            if player:
+            if player and isinstance(player, dict) and 'id' in player:
                 db_player = Player.query.get(player['id'])
                 if db_player:
                     player['balance'] = db_player.balance
                     players[i] = player
+                else:
+                    # Remove invalid player data
+                    players[i] = None
+            else:
+                # Ensure empty slots are properly set to None
+                players[i] = None
         
         session[f'game_{game_number}_players'] = players
         return render_template('setup_game.html', game_number=game_number, players=players)
@@ -103,12 +109,6 @@ def create_app():
 
             players = session.get(f'game_{game_number}_players', [None] * 9)
             
-            # Find the first empty slot if slot is not specified
-            if slot == -1:
-                slot = next((i for i, p in enumerate(players) if p is None), -1)
-                if slot == -1:
-                    return "No empty slots available", 400
-
             players[slot] = {'id': player.id, 'name': name, 'buy_in': buy_in, 'balance': player.balance}
             session[f'game_{game_number}_players'] = players
             return redirect(url_for('setup_game', game_number=game_number))
