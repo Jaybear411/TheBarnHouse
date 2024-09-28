@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask import session
+from flask import jsonify
 
 db = SQLAlchemy()
 
@@ -21,6 +22,9 @@ def create_app():
         games_played = db.Column(db.Integer, default=0)
 
     app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
+
+    with app.app_context():
+        db.create_all()
 
     @app.route('/')
     def home():
@@ -74,12 +78,17 @@ def setup_game(game_number):
 def add_player_to_game(game_number, slot):
     if request.method == 'POST':
         name = request.form['name']
-        buy_in = float(request.form['buy_in'])
+        try:
+            buy_in = float(request.form['buy_in'])
+        except ValueError:
+            return "Invalid buy-in amount", 400
+
         new_player = Player(name=name, balance=-buy_in)
         db.session.add(new_player)
         db.session.commit()
+
         players = session.get(f'game_{game_number}_players', [None] * 9)
-        players[slot] = {'id': new_player.id, 'name': name, 'buy_in': buy_in}
+        players[slot] = {'id': new_player.id, 'name': name, 'buy_in': buy_in, 'balance': -buy_in}
         session[f'game_{game_number}_players'] = players
         return redirect(url_for('setup_game', game_number=game_number))
     return render_template('add_player.html', game_number=game_number, slot=slot)
@@ -108,16 +117,12 @@ def update_player_in_game(game_number, slot):
             db.session.commit()
         
         return jsonify({'success': True, 'new_balance': player['balance']})
-    return jsonify({'success': False})
+    return jsonify({'success': False, 'error': 'Player not found'}), 404
 
-    with app.app_context():
-        db.create_all()
-
-    return app
-
-# This is used by Gunicorn
-app = create_app()
+return app
 
 if __name__ == '__main__':
     app = create_app()
+    with app.app_context():
+        db.create_all()
     app.run(debug=False)
