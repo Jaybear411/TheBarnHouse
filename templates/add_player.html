@@ -74,6 +74,10 @@
         <button type="submit">Add Player</button>
     </form>
     <br>
-    <a href="{{ url_for('setup_game', game_number=game_number) }}" class="button">Back to Game Setup</a>
+    {% if game_number is defined %}
+        <a href="{{ url_for('setup_game', game_number=game_number) }}" class="button">Back to Game Setup</a>
+    {% else %}
+        <a href="{{ url_for('manage_players') }}" class="button">Back to Player List</a>
+    {% endif %}
 </body>
 </html>
